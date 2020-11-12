@@ -2,7 +2,6 @@ package Config
 
 import (
 	"os"
-	"fmt"
 )
 
 type Configuration struct {
@@ -11,6 +10,8 @@ type Configuration struct {
 	MysqlUser string
 	MysqlPass string
 	MysqlDatabase string
+
+	JwtSecret string
 }
 
 var config *Configuration = nil
@@ -29,15 +30,14 @@ func initConfiguration() {
 	mysqlPass := defaultGetenv("MYSQL_PASS", "hunter2")
 	mysqlDatabase := defaultGetenv("MYSQL_DATABASE", "ClimbingExploration")
 
-	fmt.Println(mysqlUser)
-	fmt.Println(mysqlPass)
-	fmt.Println(mysqlDatabase)
+	jwtSecret := defaultGetenv("JWT_SECRET", "anime-tiddies")
 
 	config = &Configuration{
 		Port: port,
 		MysqlUser: mysqlUser,
 		MysqlPass: mysqlPass,
 		MysqlDatabase: mysqlDatabase,
+		JwtSecret: jwtSecret,
 	}
 }
 
