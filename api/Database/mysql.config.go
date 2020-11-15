@@ -16,7 +16,7 @@ var db *sql.DB = nil
 func initMysqlDb() error {
 
 	config := Config.GetConfig()
-	connectionString := fmt.Sprintf("%s:%s@/%s", config.MysqlUser, config.MysqlPass, config.MysqlDatabase)
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s", config.MysqlUser, config.MysqlPass, config.MysqlAddress, config.MysqlDatabase)
 	
 
 	fmt.Println(connectionString)

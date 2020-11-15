@@ -6,4 +6,9 @@ type UserModel struct {
 	HashedPwd string
 }
 
-
+type ImageModel struct {
+	Id string
+	OriginalName string
+	Ext string
+	Path string
+}

@@ -17,6 +17,7 @@ func main() {
 	router := gin.Default()
 
 	Routes.BindUserRoutes(router.Group("/users"))
+	Routes.BindImageRoutes(router.Group("/images"))
 
 	router.Run(fmt.Sprintf(":%s", Config.GetConfig().Port))
 }

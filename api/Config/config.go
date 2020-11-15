@@ -10,6 +10,7 @@ type Configuration struct {
 	MysqlUser string
 	MysqlPass string
 	MysqlDatabase string
+	MysqlAddress string
 
 	JwtSecret string
 }
@@ -29,6 +30,7 @@ func initConfiguration() {
 	mysqlUser := defaultGetenv("MYSQL_USER", "admin")
 	mysqlPass := defaultGetenv("MYSQL_PASS", "hunter2")
 	mysqlDatabase := defaultGetenv("MYSQL_DATABASE", "ClimbingExploration")
+	mysqlAddress := defaultGetenv("MYSQL_ADDRESS", "localhost")
 
 	jwtSecret := defaultGetenv("JWT_SECRET", "anime-tiddies")
 
@@ -37,6 +39,7 @@ func initConfiguration() {
 		MysqlUser: mysqlUser,
 		MysqlPass: mysqlPass,
 		MysqlDatabase: mysqlDatabase,
+		MysqlAddress: mysqlAddress,
 		JwtSecret: jwtSecret,
 	}
 }

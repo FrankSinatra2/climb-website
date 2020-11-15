@@ -33,12 +33,7 @@ func HandleAuthenticateUser(ctx *gin.Context) {
 }
 
 func HandleRetrieveUser(ctx *gin.Context) {
-	var payload Contracts.UserRetrieveRequest
-	ctx.BindJSON(payload)
-
-	// TODO replace ctx.BindJSON with ctx.ShouldBindJSON
-
-	res, err := Services.RetrieveUserById(payload.Id)
+	res, err := Services.RetrieveUserById(ctx.Param("id"))
 
 	if err == nil {
 		ctx.JSON(200, res)
