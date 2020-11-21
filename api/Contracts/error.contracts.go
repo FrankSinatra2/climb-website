@@ -3,6 +3,7 @@ package Contracts
 type ApiError struct {
 	StatusCode int `json:"-"`
 	Message string `json:"message"`
+	ErrorDescription string `json:"error_description,omitempty"`
 }
 
 /**
@@ -16,8 +17,8 @@ func DatabaseConnectionError() *ApiError {
 	return &ApiError{StatusCode: 500, Message: "Could Not Connect to Database"}
 }
 
-func DatabaseQueryError() *ApiError {
-	return &ApiError{StatusCode: 500, Message: "Could Not Execute Query"}
+func DatabaseQueryError(description string) *ApiError {
+	return &ApiError{StatusCode: 500, Message: "Could Not Execute Query", ErrorDescription: description}
 }
 
 func HashFailureError() *ApiError {

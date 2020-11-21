@@ -17,7 +17,7 @@ func CreateUser(username string, pwd string) (*Contracts.UserCreateResponse, *Co
 	stmt, err := db.Prepare("INSERT INTO `Users` (id, username, hashedPwd) VALUES (?, ?, ?)")
 
 	if err != nil {
-		return nil, Contracts.DatabaseQueryError()
+		return nil, Contracts.DatabaseQueryError(err.Error())
 	}
 
 	defer stmt.Close()
@@ -25,7 +25,7 @@ func CreateUser(username string, pwd string) (*Contracts.UserCreateResponse, *Co
 	_, err = stmt.Exec(id, username, hashedPwd)
 
 	if err != nil {
-		return nil, Contracts.DatabaseQueryError()
+		return nil, Contracts.DatabaseQueryError(err.Error())
 	}
 
 	return RetrieveUserById(id)
@@ -38,12 +38,12 @@ func AuthenticateUser(username string, password string) (*Contracts.UserAuthenti
 	stmt, err := db.Prepare("SELECT * FROM `Users` WHERE `username` = ?")
 
 	if err != nil {
-		return nil, Contracts.DatabaseQueryError()
+		return nil, Contracts.DatabaseQueryError(err.Error())
 	}
 
 	defer stmt.Close()
 
-	var result = &Database.UserModel{Id: "", Username: ""}
+	var result = Database.UserModel{Id: "", Username: ""}
 	var hashedPwd string
 	err = stmt.QueryRow(username).Scan(&result.Id, &result.Username, &hashedPwd)
 
@@ -51,7 +51,7 @@ func AuthenticateUser(username string, password string) (*Contracts.UserAuthenti
 	fmt.Printf(password)
 
 	if err != nil {
-		return nil, Contracts.DatabaseQueryError()
+		return nil, Contracts.DatabaseQueryError(err.Error())
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(password))
@@ -75,7 +75,7 @@ func RetrieveUserById(id string) (*Contracts.UserRetrieveResponse, *Contracts.Ap
 	stmt, err := db.Prepare("SELECT `id`, `username` FROM `Users` WHERE `id` = ?")
 
 	if err != nil {
-		return nil, Contracts.DatabaseQueryError()
+		return nil, Contracts.DatabaseQueryError(err.Error())
 	}
 
 	defer stmt.Close()
@@ -84,7 +84,7 @@ func RetrieveUserById(id string) (*Contracts.UserRetrieveResponse, *Contracts.Ap
 	err = stmt.QueryRow(id).Scan(&result.Id, &result.Username)
 
 	if err != nil {
-		return nil, Contracts.DatabaseQueryError()
+		return nil, Contracts.DatabaseQueryError(err.Error())
 	}
 
 	response := &Contracts.UserRetrieveResponse{Id: result.Id, Username: result.Username}
