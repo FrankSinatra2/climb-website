@@ -5,6 +5,7 @@ import (
 	"api/Database"
 	"api/Config"
 	"api/Routes"
+	"api/Middleware"
 	"fmt"
 )
 
@@ -16,7 +17,7 @@ func main() {
 
 	router := gin.Default()
 
-	
+	router.Use(Middleware.Cors())
 
 	Routes.BindUserRoutes(router.Group("/users"))
 	Routes.BindImageRoutes(router.Group("/images"))
