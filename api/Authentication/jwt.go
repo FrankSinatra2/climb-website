@@ -6,7 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-type BattleDominoesClaims struct {
+type ClimbWebsiteClaims struct {
 	User string `json:"user"`
 	jwt.StandardClaims
 }
@@ -16,7 +16,7 @@ const issuer = "climb-website.com"
 
 func GenerateJwt(username string, id string) (string, error) {
 
-	claims := BattleDominoesClaims{
+	claims := ClimbWebsiteClaims{
 		User: fmt.Sprintf("%s|%s", id, username),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiresAt,
@@ -35,7 +35,7 @@ func GenerateJwt(username string, id string) (string, error) {
 	return tokenString, nil
 }
 
-func ExtractClaims(tokenString string) (*BattleDominoesClaims, error) {
+func ExtractClaims(tokenString string) (*ClimbWebsiteClaims, error) {
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -48,7 +48,7 @@ func ExtractClaims(tokenString string) (*BattleDominoesClaims, error) {
 		return nil, err
 	}
 	
-	if claims, ok := token.Claims.(BattleDominoesClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(ClimbWebsiteClaims); ok && token.Valid {
 		return &claims, nil
 	}
 

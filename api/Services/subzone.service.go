@@ -133,7 +133,6 @@ func PageSubZoneSlideshow(id string, page int, limit int, url string) (*Contract
 	rows, err := stmt.Query(id, offset, limit)
 
 	if err != nil {
-		fmt.Println(err.Error())
 
 		if count == 0 {
 			return nil, Contracts.NotFoundError("No Images Were Found")

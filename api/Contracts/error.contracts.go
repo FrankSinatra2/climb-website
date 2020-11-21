@@ -44,6 +44,14 @@ func MissingFileError() *ApiError {
 	return &ApiError{StatusCode: 400, Message: "Request Missing File"}
 }
 
+func InvalidJwtError() *ApiError {
+	return &ApiError{StatusCode: 401, Message: "Your JWT Is Invalid Or Expired"}
+}
+
+func UnauthorizedError() *ApiError {
+	return &ApiError{StatusCode: 403, Message: "You Are Forbidden From Accessing This Resource"}
+}
+
 func NotFoundError(msg string) *ApiError {
 	return &ApiError{StatusCode: 404, Message: msg}
 }

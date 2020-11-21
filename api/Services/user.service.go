@@ -16,16 +16,18 @@ func CreateUser(username string, pwd string) (*Contracts.UserCreateResponse, *Co
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
 	stmt, err := db.Prepare("INSERT INTO `Users` (id, username, hashedPwd) VALUES (?, ?, ?)")
 
-	if err != nil {
-		return nil, Contracts.DatabaseQueryError(err.Error())
-	}
+	{
+		if err != nil {
+			return nil, Contracts.DatabaseQueryError(err.Error())
+		}
 
-	defer stmt.Close()
+		defer stmt.Close()
 
-	_, err = stmt.Exec(id, username, hashedPwd)
+		_, err = stmt.Exec(id, username, hashedPwd)
 
-	if err != nil {
-		return nil, Contracts.DatabaseQueryError(err.Error())
+		if err != nil {
+			return nil, Contracts.DatabaseQueryError(fmt.Sprintf("CreateUser: %s", err.Error()))
+		}
 	}
 
 	return RetrieveUserById(id)
@@ -46,9 +48,6 @@ func AuthenticateUser(username string, password string) (*Contracts.UserAuthenti
 	var result = Database.UserModel{Id: "", Username: ""}
 	var hashedPwd string
 	err = stmt.QueryRow(username).Scan(&result.Id, &result.Username, &hashedPwd)
-
-	fmt.Printf(hashedPwd)
-	fmt.Printf(password)
 
 	if err != nil {
 		return nil, Contracts.DatabaseQueryError(err.Error())
@@ -75,7 +74,7 @@ func RetrieveUserById(id string) (*Contracts.UserRetrieveResponse, *Contracts.Ap
 	stmt, err := db.Prepare("SELECT `id`, `username` FROM `Users` WHERE `id` = ?")
 
 	if err != nil {
-		return nil, Contracts.DatabaseQueryError(err.Error())
+		return nil, Contracts.DatabaseQueryError(fmt.Sprintf("RetrieveUserById1: %s", err.Error()))
 	}
 
 	defer stmt.Close()
@@ -84,7 +83,7 @@ func RetrieveUserById(id string) (*Contracts.UserRetrieveResponse, *Contracts.Ap
 	err = stmt.QueryRow(id).Scan(&result.Id, &result.Username)
 
 	if err != nil {
-		return nil, Contracts.DatabaseQueryError(err.Error())
+		return nil, Contracts.DatabaseQueryError(fmt.Sprintf("RetrieveUserById2: %s", err.Error()))
 	}
 
 	response := &Contracts.UserRetrieveResponse{Id: result.Id, Username: result.Username}

@@ -5,7 +5,6 @@ import (
 	"api/Services"
 	"github.com/gin-gonic/gin"
 	"strconv"
-	"fmt"
 )
 
 func HandleCreateZone(ctx *gin.Context) {
@@ -13,7 +12,6 @@ func HandleCreateZone(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&body)
 	
 	if err != nil {
-		fmt.Println(err.Error())
 		res := Contracts.BadRequestError()
 		ctx.JSON(res.StatusCode, res)
 		return

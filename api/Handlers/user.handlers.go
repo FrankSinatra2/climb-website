@@ -8,27 +8,39 @@ import (
 
 func HandleCreateUser(ctx *gin.Context) {
 	var payload Contracts.UserCreateRequest
-	ctx.BindJSON(payload)
+	err := ctx.ShouldBindJSON(&payload)
 
-	res, err := Services.CreateUser(payload.Username, payload.Password)
+	if err != nil {
+		apiError := Contracts.BadRequestError()
+		ctx.JSON(apiError.StatusCode, apiError)
+		return
+	}
 
-	if err == nil {
+	res, apiError := Services.CreateUser(payload.Username, payload.Password)
+
+	if apiError == nil {
 		ctx.JSON(200, res)
 	} else {
-		ctx.JSON(err.StatusCode, err)
+		ctx.JSON(apiError.StatusCode, apiError)
 	}
 }
 
 func HandleAuthenticateUser(ctx *gin.Context) {
 	var payload Contracts.UserAuthenticateRequest
-	ctx.BindJSON(payload)
+	err := ctx.ShouldBindJSON(&payload)
 
-	res, err := Services.AuthenticateUser(payload.Username, payload.Password)
+	if err != nil {
+		apiError := Contracts.BadRequestError()
+		ctx.JSON(apiError.StatusCode, apiError)
+		return
+	}
 
-	if err == nil {
+	res, apiError := Services.AuthenticateUser(payload.Username, payload.Password)
+
+	if apiError == nil {
 		ctx.JSON(200, res)
 	} else {
-		ctx.JSON(err.StatusCode, err)
+		ctx.JSON(apiError.StatusCode, apiError)
 	}
 }
 
