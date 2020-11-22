@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 	"api/Database"
 	"api/Config"
 	"api/Routes"
-	"api/Middleware"
 	"fmt"
 )
 
@@ -17,7 +17,7 @@ func main() {
 
 	router := gin.Default()
 
-	router.Use(Middleware.Cors())
+	router.Use(cors.Default())
 
 	Routes.BindUserRoutes(router.Group("/users"))
 	Routes.BindImageRoutes(router.Group("/images"))

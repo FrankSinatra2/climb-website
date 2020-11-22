@@ -1,199 +1,123 @@
 module Main exposing (..)
 
-import Browser
-import Html exposing (Html)
+import Browser exposing (Document)
+import Browser.Navigation as Nav
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Url
 
-import Element exposing (..)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Input as Input
-import Element.Region exposing (description)
-import Html.Attributes exposing (hidden)
-import Element.Font as Font
+import Page.Login as Login
+import Page.Blank as Blank
+import Session exposing (fromAuth)
+import Session exposing (Session)
+import Route exposing (Route)
+import Browser exposing (UrlRequest)
 
 
-main =
-    Browser.element 
+type Model
+    = Redirect Session
+    | NotFound Session
+    | Login Login.Model
+
+type Msg
+    = ClickedLink Browser.UrlRequest
+    | ChangedUrl Url.Url
+    | GotLoginMsg Login.Msg
+
+main : Program () Model Msg
+main = 
+    Browser.application
         { init = init
-        , subscriptions = subscriptions
+        , view = view
         , update = update
-        , view = view 
+        , subscriptions = subscriptions
+        , onUrlChange = ChangedUrl
+        , onUrlRequest = ClickedLink
         }
 
-type alias ZoneModel =
-    { name : String
+init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
+init flags url key =
+    changeRouteTo (Route.fromUrl url)
+        (Redirect (Session.fromAuth key Nothing))
+
+
+view : Model -> Document Msg
+view model =
+    let
+        body = case model of
+            Redirect _ ->
+                Blank.view
+            Login m ->
+                Html.map GotLoginMsg <| Login.view m
+            NotFound _ ->
+                Blank.view
+    in
+    { title = "Climbing Exploration"
+    , body = [ body ]
     }
 
-type SlideShow = SlideShow String SlideShow SlideShow | Empty
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model = 
+    case (msg, model) of
+        (ClickedLink urlRequest, _) ->
+            case urlRequest of
+                Browser.Internal url ->
+                    case url.fragment of
+                        Nothing ->
+                            (model, Cmd.none)
 
-type alias Description =
-    { location : String
-    , review : String
-    }
+                        Just _ ->
+                            (model, Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url))
 
-type alias Model =
-    { zones : { elements : List ZoneModel, active : ZoneModel }
-    , slideShow : SlideShow
-    , description : Description
-    , subZones : { elements : List ZoneModel, active : ZoneModel }
-    }
+                Browser.External href ->
+                    (model, Nav.load href)
+        
+        (ChangedUrl url, _) ->
+            changeRouteTo (Route.fromUrl url) model
 
-type Msg = Noop
+        (GotLoginMsg subMsg, Login login) ->
+            Login.update subMsg login
+                |> updateWith Login GotLoginMsg model
 
-edges = 
-    { right = 0
-    , left = 0
-    , top = 0
-    , bottom = 0
-    }
+        (_,_) ->
+            (model, Cmd.none)
+        
 
-tempZones = 
-    [ { name = "zone 1" }
-    , { name = "zone 2" }
-    , { name = "zone 3" }
-    , { name = "zone 4" }
-    , { name = "zone 5" }
-    ]
 
-tempSubZones =
-    [ { name = "subzone a" }
-    , { name = "subzone b" }
-    , { name = "subzone c" }
-    ]
+updateWith : (subModel -> Model) -> (subMsg -> Msg) -> Model -> (subModel, Cmd subMsg) -> (Model, Cmd Msg)
+updateWith toModel toMsg model (subModel, subCmd) =
+    (toModel subModel, Cmd.map toMsg subCmd)
 
-init : () -> (Model, Cmd Msg)
-init _ =
-    (
-        { zones = { elements = tempZones, active = { name = "zone 1" }}
-        , slideShow = Empty
-        , description = { location = "sunriver", review = "pretty good" }
-        , subZones = { elements = tempSubZones, active = { name = "subzone b" }}
-        }
-        , Cmd.none
-    )
-
-subscriptions : Model -> Sub Msg 
+subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model = ( model, Cmd.none )
 
-view : Model -> Html Msg
-view model =
+toSession : Model -> Session
+toSession model =
+    case model of
+        NotFound s ->
+            s
+
+        Redirect s ->
+            s
+
+        Login m ->
+            Login.toSession m
+        
+
+changeRouteTo : Maybe Route -> Model -> (Model, Cmd Msg)
+changeRouteTo maybeRoute model =
     let
-        mainZones = mainZonesView model.zones.elements model.zones.active
-        content = 
-            column 
-                [ width <| fillPortion 3
-                , height fill
-                , paddingEach { edges | left = 32, right = 32 }
-                , spacingXY 0 32
-                ] 
-                [ slideShowView model.slideShow
-                , descriptionView model.description
-                ]
-        subZones = subZonesView model.subZones.elements model.subZones.active
+        session = toSession model
     in
-        layout
-            [ paddingXY 32 32
-            , width fill
-            , height <| px 800
-            , Background.color <| Element.rgb 0.95 0.95 0.95 
-            ]
-            ( row 
-                [ width fill
-                , height fill 
-                ] 
-                [ mainZones
-                , content
-                , subZones 
-                ] 
-            )
+    case maybeRoute of
+        Nothing ->
+            (NotFound session, Cmd.none)
+        
+        Just Route.Home ->
+            (NotFound session, Cmd.none)
 
-zoneRow : ZoneModel -> ZoneModel -> Element msg
-zoneRow zone activeZone = 
-    let
-        color = 
-            if zone.name == activeZone.name then
-                Element.rgb 0.0 0.3 0.7
-            else
-                Element.rgb 1.0 1.0 1.0
-    in
-        el
-            [ paddingXY 0 8
-            , width fill
-            , Background.color color
-            ]
-            ( text zone.name )
-mainZonesView : List ZoneModel -> ZoneModel -> Element msg
-mainZonesView zones active =
-    let
-        zoneRows = 
-            List.map
-                (\x -> zoneRow x active )
-                zones
-    in
-        column
-            [ width <| fillPortion 1
-            , Border.shadow { offset = (3.0, 3.0), size = 1.0, blur = 5.0, color = Element.rgba 0.0 0.0 0.0 0.23 }
-            , height fill
-            , Background.color <| Element.rgb 1.0 1.0 1.0
-            , paddingXY 16 16 
-            ]
-            zoneRows
-
-slideShowView : SlideShow -> Element msg
-slideShowView model = 
-    let
-        content = 
-            case model of
-                SlideShow url prev next ->
-                    el [] ( text url )
-                Empty ->
-                    el [] ( text "This zone has no images" )
-    in
-        el 
-            [ Border.shadow { offset = (3.0, 3.0), size = 1.0, blur = 5.0, color = Element.rgba 0.0 0.0 0.0 0.23 }
-            , height <| fillPortion 2
-            , width fill
-            , Background.color <| Element.rgb 1.0 1.0 1.0
-            , paddingXY 16 16
-            ] 
-            content
-
-descriptionView : Description -> Element msg
-descriptionView model =
-    let
-        header = el [ Font.alignLeft, Font.size 18, Font.heavy ] ( text model.location )
-
-        body = el [ alignLeft ] ( text model.review )
-
-    in
-        column
-            [ height <| fillPortion 1
-            , width fill
-            , Border.shadow { offset = (3.0, 3.0), size = 1.0, blur = 5.0, color = Element.rgba 0.0 0.0 0.0 0.23 }
-            , Background.color <| Element.rgb 1.0 1.0 1.0
-            , paddingXY 16 16
-            ]
-            [ header
-            , body
-            ]
-
-subZonesView : List ZoneModel -> ZoneModel -> Element msg
-subZonesView zones active =
-    let
-        zoneRows = 
-            List.map
-                (\x -> zoneRow x active )
-                zones
-    in
-        column
-            [ width <| fillPortion 1
-            , height fill
-            , Border.shadow { offset = (3.0, 3.0), size = 1.0, blur = 5.0, color = Element.rgba 0.0 0.0 0.0 0.23 }
-            , Background.color <| Element.rgb 1.0 1.0 1.0
-            , paddingXY 16 16
-            ]
-            zoneRows
+        Just Route.Login ->
+            Login.init session
+                |> updateWith Login GotLoginMsg model

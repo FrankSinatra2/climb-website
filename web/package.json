@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "reactor": "elm reactor"
+    "reactor": "elm reactor",
+    "build": "elm make src/Main.elm --output ./dist/elm.js",
+    "start": "http-server ./dist"
   },
   "author": "",
   "license": "ISC",
