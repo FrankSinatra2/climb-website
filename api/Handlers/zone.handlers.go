@@ -35,6 +35,19 @@ func HandleRetrieveZone(ctx *gin.Context) {
 	}
 }
 
+func HandlePageZones(ctx *gin.Context) {
+	url := Services.CreateFullUrl(ctx.Request.Proto, ctx.Request.Host, ctx.Request.URL.Path)
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	res, apiError := Services.PageZones(page, limit, url)
+	if apiError != nil {
+		ctx.JSON(apiError.StatusCode, apiError)
+	} else {
+		ctx.JSON(200, res)
+	}
+}
+
 func HandlePatchZone(ctx *gin.Context) {
 	res := Contracts.NotImplementedError()
 	ctx.JSON(res.StatusCode, res)

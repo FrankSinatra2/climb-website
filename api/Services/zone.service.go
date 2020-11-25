@@ -66,6 +66,100 @@ func RetrieveZoneById(id string) (*Contracts.ZoneRetrieveResponse, *Contracts.Ap
 	return response, nil
 }
 
+func getZoneCount() (int, *Contracts.ApiError) {
+	db := Database.GetDb()
+	stmt, err := db.Prepare("SELECT COUNT(*) FROM `Zones`")
+
+	if err != nil {
+		return 0, Contracts.DatabaseQueryError(err.Error())
+	}
+
+	var count = 0
+	err = stmt.QueryRow().Scan(&count)
+
+	if err != nil {
+		return 0, Contracts.DatabaseQueryError(err.Error())
+	}
+
+	return count, nil
+}
+
+func PageZones(page int, limit int, url string) (*Contracts.ZonePageResponse, *Contracts.ApiError) {
+	linksFormat := "%s?page=%d&limit=%d"
+	count, apiError := getZoneCount()
+	if apiError != nil {
+		return nil, apiError
+	}
+
+	offset := (page - 1) * limit
+	lastPage := int(count / limit)
+	
+	pageLinks := Contracts.PageLinks{
+		Self: "",
+		First: "",
+		Next: "",
+		Previous: "",
+		Last: "",
+	}
+	
+	pageLinks.Self = fmt.Sprintf(linksFormat, url, page, limit)
+	if lastPage > 1 {
+		pageLinks.First = fmt.Sprintf(linksFormat, url, 1, limit)
+		if page != lastPage {
+			pageLinks.Previous = fmt.Sprintf(linksFormat, url, lastPage, limit)
+		}
+	}
+
+	if page < lastPage {
+		pageLinks.Next = fmt.Sprintf(linksFormat, url, page + 1, limit)
+	}
+	
+	if page != 1 {
+		pageLinks.Previous = fmt.Sprintf(linksFormat, url, page - 1, limit)
+	}
+
+	db := Database.GetDb()
+	stmt, err := db.Prepare("SELECT * FROM `Zones` LIMIT ?, ?")
+
+	if err != nil {
+		return nil, Contracts.DatabaseQueryError(err.Error())
+	}
+
+	rows, err := stmt.Query(offset, limit)
+
+	if err != nil {
+		if count == 0 {
+			return nil, Contracts.NotFoundError("No Zones Were Found")
+		}
+		return nil, Contracts.DatabaseQueryError(err.Error())
+	}
+
+	zones := []Contracts.ZoneRetrieveResponse{}
+
+	for rows.Next() {
+		var id string
+		var lat float32
+		var long float32
+		var title string
+
+		err = rows.Scan(&id, &lat, &long, &title)
+
+		if err != nil {
+			return nil, Contracts.DatabaseQueryError(err.Error())
+		}
+
+		zones = append(zones, Contracts.ZoneRetrieveResponse{Id: id, Latitude: lat, Longitude: long, Title: title})
+	}
+
+	response := &Contracts.ZonePageResponse{
+		PageLinks: pageLinks,
+		TotalCount: count,
+		Zones: zones,
+	}
+
+	return response, nil
+}
+
 func getSubZoneCount(id string) (int, *Contracts.ApiError) {
 	db := Database.GetDb()
 	stmt, err := db.Prepare("SELECT COUNT(*) FROM `SubZones` WHERE `zoneId` = ?")
