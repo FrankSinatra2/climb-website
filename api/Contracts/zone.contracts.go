@@ -17,6 +17,12 @@ type ZoneRetrieveResponse struct {
 	Title string `json:"title"`
 }
 
+type ZonePageResponse struct {
+	PageLinks `json:"links"`
+	TotalCount int `json:"total_count"`
+	Zones []ZoneRetrieveResponse `json:"records"`
+}
+
 type ZoneSubZonePageResponse struct {
 	PageLinks `json:"links"`
 	TotalCount int `json:"total_count"`
