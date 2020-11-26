@@ -14,3 +14,7 @@ secondaryDark = rgb255 0x00 0x76 0x6c
 
 textOnPrimary = rgb 1.0 1.0 1.0
 textOnSecondary = rgb 0.0 0.0 0.0
+
+
+white = rgb 1.0 1.0 1.0
+black = rgb 1.0 1.0 1.0

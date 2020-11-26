@@ -1,4 +1,4 @@
-module Api.Zones exposing (..)
+module Api.Zones exposing (Zone, decodeZone, fetchZones)
 
 import Json.Decode as Json
 import Api
@@ -29,9 +29,9 @@ paramsToUrl : { page : Int, limit : Int} -> String
 paramsToUrl config = Api.climbApi ++ "/zones?page=" ++ (fromInt config.page) ++ "&limit=" ++ (fromInt config.limit)
 
 
-fetchZones : String -> { onResponse : Api.Data (PaginatedList Zone) -> msg} -> Cmd msg
-fetchZones url options =
+fetchZones : { page : Int, limit : Int} -> { onResponse : Api.Data (PaginatedList Zone) -> msg} -> Cmd msg
+fetchZones params options =
     Http.get
-        { url = url
+        { url = paramsToUrl params
         , expect = Api.expectJson options.onResponse (decodePaginatedList (Json.list decodeZone))
         }

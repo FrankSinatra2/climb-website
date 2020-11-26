@@ -1,6 +1,7 @@
 module Api.PaginatedList exposing (..)
 
 import Json.Decode as Json
+import String exposing(fromInt)
 
 type alias PageLinks =
     { self : String
