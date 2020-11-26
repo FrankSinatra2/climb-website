@@ -31,11 +31,10 @@ decodePageLinks : Json.Decoder PageLinks
 decodePageLinks =
     Json.map5 PageLinks
         (Json.field "self" Json.string)
-        (Json.field "next" (Json.nullable Json.string))
-        (Json.field "previous" (Json.nullable Json.string))
-        (Json.field "first" (Json.nullable Json.string))
-        (Json.field "last" (Json.nullable Json.string))
-        
+        (Json.maybe (Json.field "next" Json.string))
+        (Json.maybe (Json.field "previous" Json.string))
+        (Json.maybe (Json.field "first" Json.string))
+        (Json.maybe (Json.field "last" Json.string))
 
 decodePaginatedList : Json.Decoder (List a) -> Json.Decoder (PaginatedList a)
 decodePaginatedList recordDecoder =

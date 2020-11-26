@@ -23,6 +23,7 @@ import Api exposing (Data(..))
 import Api.User exposing (UserData)
 import Api.User exposing (fromAccessToken)
 import Util.Route
+import Ports
 
 
 page : Page Params Model Msg
@@ -88,7 +89,17 @@ update msg model =
             (model, Api.User.authenticate model.userData { onResponse = GotAccessToken })
 
         GotAccessToken data ->
-            ({model | token = data}, Util.Route.navigate model.key Route.Top)
+            case data of
+                Success val ->
+                    ( {model | token = data}
+                    , Cmd.batch 
+                        [ Ports.saveAccessToken val
+                        , Util.Route.navigate model.key Route.Top
+                        ]
+                    )
+
+                _ ->
+                    (model, Cmd.none)
 
 
 

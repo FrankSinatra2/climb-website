@@ -16,14 +16,15 @@ import Spa.Document exposing (Document)
 import Spa.Generated.Route as Route
 import Url exposing (Url)
 import Api.User exposing (AccessToken)
-
+import Json.Decode as Json
+import Api.User exposing (decodeAccessToken)
 
 
 -- INIT
 
 
 type alias Flags =
-    ()
+    Json.Value
 
 
 type alias Model =
@@ -35,9 +36,15 @@ type alias Model =
 
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( Model url key Nothing
-    , Cmd.none
-    )
+    let
+        token =
+            flags 
+                |> Json.decodeValue decodeAccessToken
+                |> Result.toMaybe
+    in
+        ( Model url key token
+        , Cmd.none
+        )
 
 
 
