@@ -29,7 +29,10 @@ paramsToUrl : { page : Int, limit : Int} -> String
 paramsToUrl config = Api.climbApi ++ "/zones?page=" ++ (fromInt config.page) ++ "&limit=" ++ (fromInt config.limit)
 
 
-fetchZones : { page : Int, limit : Int} -> { onResponse : Api.Data (PaginatedList Zone) -> msg} -> Cmd msg
+fetchZones : 
+    { page : Int, limit : Int}
+    -> { onResponse : Api.Data (PaginatedList Zone) -> msg}
+    -> Cmd msg
 fetchZones params options =
     Http.get
         { url = paramsToUrl params
